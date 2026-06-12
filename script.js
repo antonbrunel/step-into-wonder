@@ -128,10 +128,10 @@
   setTimeout(measureFoliage, 300);
 
   // ---------- Timeline pilotée par l'horloge RAF ----------
-  // Jamais de setTimeout pour la timeline : le décodage des grands PNG étrangle
-  // le main thread et les timers partent avec plusieurs secondes de retard.
-  // La timeline ne démarre qu'une fois TOUTES les images décodées (sinon le
-  // fond apparaît seul pendant que les moitiés se décodent).
+  // Jamais de setTimeout pour la timeline : le décodage des grandes images
+  // étrangle le main thread et les timers partent avec du retard.
+  // La timeline ne démarre qu'au lever du rideau d'intro — lui-même conditionné
+  // au décodage de TOUTES les images (machine à états plus bas).
   let t0 = null;
   let zoomScale = ZOOM_FROM;
   let zoomDone = false;
@@ -159,11 +159,103 @@
 
   const allImgs = Array.from(document.querySelectorAll("img"));
   const ready = Promise.allSettled(allImgs.map((im) => im.decode ? im.decode() : Promise.resolve()));
+  let imagesReady = false;
+  ready.then(() => { imagesReady = true; });
+
+  // ---------- Intro cinématique (machine à états sur l'horloge RAF) ----------
+  // Cartons de texte sur rideau noir pendant le décodage, façon générique de
+  // film : EN, puis FR si les images n'ont pas suivi, puis cartons d'attente
+  // en alternance. Le checkpoint n'a lieu qu'EN FIN de carton (jamais en cours
+  // de phrase) ; le lever de rideau révèle le frame-0 vivant (parallaxe déjà
+  // active), respire, PUIS pose t0 — le voyage part totalement à découvert.
+  const CARDS = [
+    { kicker: "a demo by",             main: "Antton Brunel" },
+    { kicker: "une démo proposée par", main: "Antton Brunel" },
+    { kicker: "still loading",         main: "wonder takes a moment" },
+    { kicker: "thank you for waiting", main: "it’s on its way" },
+  ];
+  const CARD_OUT = 3050;   // sortie du texte (lettres posées + tenue écoulée)
+  const CARD_END = 4200;   // fin du carton : sortie 700ms + battement noir 450ms
+  const CURTAIN_GO = 1500; // fondu du rideau 1150ms + respiration 350ms -> t0
+
+  const intro = {
+    el: $("intro"),
+    content: $("intro-content"),
+    kicker: $("intro-kicker"),
+    main: $("intro-main"),
+    state: "card", idx: 0, start: null, outAdded: false,
+  };
+
+  function introSetCard(idx) {
+    // Au-delà de la liste : alternance des deux cartons d'attente
+    const card = idx < CARDS.length ? CARDS[idx] : CARDS[2 + (idx % 2)];
+    intro.kicker.textContent = card.kicker;
+    intro.main.innerHTML = "";
+    let li = 0;
+    for (const word of card.main.split(" ")) {
+      const w = document.createElement("span");
+      w.className = "w";
+      for (const ch of word) {
+        const l = document.createElement("span");
+        l.className = "l";
+        l.textContent = ch;
+        l.style.transitionDelay = (350 + li * 45) + "ms"; // cascade d'écriture
+        w.appendChild(l);
+        li++;
+      }
+      intro.main.appendChild(w);
+    }
+  }
+
+  function introTick(now) {
+    // Onglet gelé pendant un carton : au retour, l'horloge a sauté et on passe
+    // directement au checkpoint — état cohérent, personne ne regardait. t0 ne
+    // peut être posé que par un frame RAF, donc onglet visible.
+    if (intro.state === "done") return;
+
+    if (intro.start === null) { // premier frame visible : carton 1
+      intro.start = now;
+      introSetCard(0);
+      intro.content.classList.add("in");
+      return;
+    }
+    const e = now - intro.start;
+
+    if (intro.state === "card") {
+      if (e >= CARD_OUT && !intro.outAdded) {
+        intro.outAdded = true;
+        intro.content.classList.add("out");
+      }
+      if (e >= CARD_END) {
+        if (imagesReady) {
+          intro.state = "reveal";
+          intro.start = now;
+          intro.el.classList.add("reveal"); // lever de rideau sur le plan vivant
+        } else {
+          // Carton suivant : retour à l'état caché SANS animation, puis cascade
+          intro.idx++;
+          intro.start = now;
+          intro.outAdded = false;
+          intro.content.classList.add("reset");
+          intro.content.classList.remove("in", "out");
+          introSetCard(intro.idx);
+          void intro.content.offsetWidth;
+          intro.content.classList.remove("reset");
+          intro.content.classList.add("in");
+        }
+      }
+    } else if (intro.state === "reveal" && e >= CURTAIN_GO) {
+      intro.state = "done";
+      intro.el.classList.add("gone");
+      t0 = now; // départ du voyage : rideau levé + respiration écoulée
+    }
+  }
 
   // ---------- Boucle RAF ----------
   function frame(now) {
-    // Avant la fin du décodage des images (t0 null), on rend l'état frame-0
-    // (moitiés zoomées, fondu noir) — jamais la scène à l'échelle 1.
+    introTick(now);
+    // Tant que le rideau n'est pas levé (t0 null), on rend l'état frame-0
+    // (moitiés zoomées, parallaxe active) — jamais la scène à l'échelle 1.
     const elapsed = t0 === null ? 0 : now - t0;
     while (stepIdx < steps.length && elapsed >= steps[stepIdx].at) {
       steps[stepIdx].run();
@@ -257,18 +349,9 @@
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  // La timeline démarre quand les images sont décodées ET l'onglet visible
-  // (Chrome gèle transitions/RAF des onglets occlus : démarrer caché =
-  // animation sautée ou états à moitié fondus au retour).
-  ready.then(() => {
-    if (!document.hidden) { t0 = performance.now(); return; }
-    document.addEventListener("visibilitychange", function once() {
-      if (!document.hidden && t0 === null) {
-        t0 = performance.now();
-        document.removeEventListener("visibilitychange", once);
-      }
-    });
-  });
+  // t0 est posé par la machine d'intro (rideau levé + respiration). Seul un
+  // frame RAF — donc un onglet visible — peut le poser : la garde "ne jamais
+  // démarrer caché" est structurelle (Chrome gèle le RAF des onglets occlus).
 
   document.querySelectorAll("a, .card").forEach((el) => {
     el.addEventListener("mouseenter", () => cursorEl.classList.add("grow"));
