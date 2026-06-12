@@ -55,7 +55,7 @@ html, body {
 #foliage-tl  { top: -3vh;    left: -5vw;  width: 36vw; }
 #foliage-tr  { top: -3vh;    right: -4vw; width: 31vw; }
 #foliage-bl  { bottom: -5vh; left: -3vw;  width: 30vw; }
-#foliage-br  { bottom: -4vh; right: -3vw; width: 29vw; }
+#foliage-br  { bottom: -7vh; right: -3vw; width: 31vw; }
 
 /* États initiaux (frame 0) */
 /* L'arrière-plan (image originale brute) est visible dès la frame 0 :

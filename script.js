@@ -111,7 +111,13 @@
   });
 
   // ---------- Feuillage : centres mesurés sur les vrais éléments ----------
-  const folState = foliages.map((el) => ({ el, baseX: 0, baseY: 0, x: 0, y: 0, r: 0 }));
+  // Centre de répulsion abaissé pour le buisson bas-droit : son bbox remonte
+  // haut au-dessus des cards, et un centre au milieu ferait qu'un curseur posé
+  // sur les boutons (donc SOUS le centre) pousse le buisson vers le HAUT.
+  // Ancré à 85% de sa hauteur, le centre passe sous le bas du viewport :
+  // le curseur est toujours au-dessus -> poussée vers le bas, jamais vers le haut.
+  const FOLIAGE_ANCHOR_Y = { "foliage-br": 0.85 };
+  const folState = foliages.map((el) => ({ el, baseX: 0, baseY: 0, x: 0, y: 0, r: 0, ay: FOLIAGE_ANCHOR_Y[el.id] ?? 0.5 }));
 
   function measureFoliage() {
     for (const f of folState) {
@@ -119,7 +125,7 @@
       f.el.style.transform = "";
       const rct = f.el.getBoundingClientRect();
       f.baseX = rct.left + rct.width / 2;
-      f.baseY = rct.top + rct.height / 2;
+      f.baseY = rct.top + rct.height * f.ay;
       f.el.style.transform = prev;
     }
   }
