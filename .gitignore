@@ -1,0 +1,4 @@
+.claude/
+
+# Image masters stay local — only optimized WebP is shipped
+images/*.png

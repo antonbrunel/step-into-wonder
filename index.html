@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Into Wonder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="hero">
+
+  <!-- Layer stack (back to front) -->
+  <div class="layer-wrap" id="wrap-sky"><img class="layer scene" id="sky" src="./images/sky-v7.webp" alt=""></div>
+  <div class="layer-wrap" id="wrap-portal-left"><img class="layer scene" id="portal-left" src="./images/portal-left-v7.webp" alt=""></div>
+  <div class="layer-wrap" id="wrap-portal-right"><img class="layer scene" id="portal-right" src="./images/portal-right-v7.webp" alt=""></div>
+  <div class="layer-wrap" id="wrap-full-scene"><img class="layer scene" id="full-scene" src="./images/full-scene-v7.webp" alt=""></div>
+
+  <!-- Objets indépendants, zoomés avec la scène pendant l'atterrissage -->
+  <div id="fx-zoom">
+    <div class="layer-wrap" id="wrap-flowers"><img class="overlay" id="flowers" src="./images/foreground-flowers.webp" alt=""></div>
+    <div class="layer-wrap foliage-wrap"><img class="overlay foliage" id="foliage-tl" src="./images/foliage-tl.webp" alt=""></div>
+    <div class="layer-wrap foliage-wrap"><img class="overlay foliage" id="foliage-tr" src="./images/foliage-tr.webp" alt=""></div>
+    <div class="layer-wrap foliage-wrap"><img class="overlay foliage" id="foliage-bl" src="./images/foliage-bl.webp" alt=""></div>
+    <div class="layer-wrap foliage-wrap"><img class="overlay foliage" id="foliage-br" src="./images/foliage-br.webp" alt=""></div>
+  </div>
+
+  <!-- UI -->
+  <nav class="nav" id="nav">
+    <a href="#" data-fx="dive">work</a>
+    <a href="#" data-fx="curtain">the garden</a>
+    <span class="nav-star">&#10022;</span>
+    <a href="#" data-fx="dusk">about</a>
+    <a href="#" data-fx="plant">say hi</a>
+  </nav>
+
+  <div class="hero-text" id="hero-text">
+    <h1>
+      <span class="line"><span class="line-inner">STEP</span></span>
+      <span class="line"><span class="line-inner">&rsaquo; INTO</span></span>
+      <span class="line"><span class="line-inner">WONDER</span></span>
+    </h1>
+    <p class="subtitle">Designing immersive digital experiences that blur<br>the line between imagination, AI, and reality.</p>
+  </div>
+
+  <div class="cards" id="cards">
+    <div class="card" data-fx="curtain"><span class="card-icon">&#9654;</span><span>wander the garden</span></div>
+    <div class="card" data-fx="dusk"><span class="card-icon">&#10022;</span><span>open for new projects</span></div>
+    <div class="card" data-fx="plant"><span class="card-icon">&#8594;</span><span>say hi</span></div>
+  </div>
+
+  <!-- Effets de transition -->
+  <div id="vignette"></div>
+  <div id="bloom"></div>
+  <div id="demo-overlay">
+    <div class="demo-text">
+      <h2>
+        <span class="line"><span class="line-inner" id="dl1"></span></span>
+        <span class="line"><span class="line-inner" id="dl2"></span></span>
+      </h2>
+      <p class="demo-sub" id="dsub"></p>
+      <div class="demo-nav">
+        <a href="#" data-goto="dive">work</a>
+        <a href="#" data-goto="curtain">the garden</a>
+        <a href="#" data-goto="dusk">about</a>
+        <a href="#" data-goto="plant">say hi</a>
+        <a href="#" id="back">&larr; back</a>
+      </div>
+      <p class="demo-caption">&#10022; demo by Antton &mdash; it ends here, but not bad, right?</p>
+    </div>
+  </div>
+
+  <!-- Custom cursor -->
+  <div class="cursor" id="cursor"></div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
