@@ -446,8 +446,12 @@ html, body {
   mix-blend-mode: difference;
   pointer-events: none;
   z-index: 999;
-  transition: width 0.25s ease, height 0.25s ease, margin 0.25s ease;
+  /* Invisible tant que la souris n'est pas détectée : pas de cercle statique
+     planté au centre pendant l'intro (ni jamais, sur écran tactile) */
+  opacity: 0;
+  transition: width 0.25s ease, height 0.25s ease, margin 0.25s ease, opacity 0.8s ease;
 }
+.cursor.live { opacity: 1; }
 
 .cursor.grow {
   width: 50px;

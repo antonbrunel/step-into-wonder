@@ -103,7 +103,16 @@
   let nx = 0, ny = 0, pnx = 0, pny = 0;
   let curX = mouseX, curY = mouseY;
 
+  let cursorLive = false;
   window.addEventListener("mousemove", (e) => {
+    if (!cursorLive) {
+      // Première détection : le cercle naît SOUS la souris (pas de glissement
+      // depuis le centre) et fond en douceur via .live
+      cursorLive = true;
+      curX = e.clientX;
+      curY = e.clientY;
+      cursorEl.classList.add("live");
+    }
     mouseX = e.clientX;
     mouseY = e.clientY;
     nx = (e.clientX / window.innerWidth) * 2 - 1;

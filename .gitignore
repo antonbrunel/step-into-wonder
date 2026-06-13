@@ -1,4 +1,6 @@
-.claude/
+# Config locale ignorée, mais la skill projet est versionnée
+.claude/*
+!.claude/skills/
 
 # Image masters stay local — only optimized WebP is shipped
 images/*.png
