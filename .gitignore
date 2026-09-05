@@ -1,6 +1,5 @@
-# Config locale ignorée, mais la skill projet est versionnée
-.claude/*
-!.claude/skills/
+# Atelier local (instructions d'agent), jamais publié
+.claude/
 
 # Image masters stay local — only optimized WebP is shipped
 images/*.png
